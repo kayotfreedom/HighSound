@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High Sound — расчёт короба для сабвуфера</title>
+<style>
+  :root{
+    --bg:#0b0f14; --bg-soft:#121820; --card:#161d27; --line:#232c38;
+    --text:#e8eef6; --muted:#8a97a8; --accent:#00e0a4; --accent2:#3b82f6;
+    --radius:18px; --shadow:0 10px 40px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(59,130,246,.18), transparent 60%),
+      radial-gradient(900px 500px at 0% 10%, rgba(0,224,164,.12), transparent 60%),
+      var(--bg);
+    color:var(--text); line-height:1.55; min-height:100vh;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 22px}
+
+  header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(11,15,20,.72);border-bottom:1px solid var(--line);}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo svg{width:40px;height:40px;flex:none}
+  .logo-text{font-weight:800;font-size:1.25rem;letter-spacing:.5px}
+  .logo-text span{color:var(--accent)}
+  .nav-links{display:flex;gap:26px;font-size:.95rem;color:var(--muted)}
+  .nav-links a:hover{color:var(--text)}
+  .nav-links a.active{color:var(--accent)}
+  @media(max-width:760px){.nav-links{display:none}}
+
+  .page-head{padding:48px 0 24px}
+  .page-head h1{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;letter-spacing:-1px}
+  .page-head h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .page-head p{color:var(--muted);margin-top:8px;max-width:720px}
+
+  .layout{display:grid;grid-template-columns:400px 1fr;gap:24px;padding-bottom:60px}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+
+  .panel{background:linear-gradient(180deg,var(--card),var(--bg-soft));border:1px solid var(--line);
+    border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+  .panel h3{font-size:1.05rem;margin-bottom:16px;display:flex;align-items:center;gap:9px}
+  .panel h3 .ico{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:.9rem;
+    background:rgba(0,224,164,.12);color:var(--accent)}
+  .group-title{font-size:.75rem;letter-spacing:1px;text-transform:uppercase;color:#5d6b7d;
+    margin:18px 0 10px;font-weight:700}
+  .group-title:first-of-type{margin-top:0}
+
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;font-weight:600}
+  .field .unit{float:right;color:#5d6b7d;font-weight:400}
+  .field input,.field select{width:100%;padding:10px 12px;border-radius:10px;background:#0e141b;
+    border:1px solid var(--line);color:var(--text);font-size:.92rem;font-family:inherit;outline:none;transition:.2s}
+  .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,224,164,.12)}
+  .field option{background:#0e141b}
+
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  .viewer{position:relative;border-radius:var(--radius);overflow:hidden;
+    border:1px solid var(--line);background:#0a0e13;min-height:420px}
+  #canvas3d{width:100%;height:100%;display:block}
+  .viewer-badge{position:absolute;top:14px;left:14px;font-size:.72rem;letter-spacing:.5px;
+    padding:5px 11px;border-radius:7px;background:rgba(11,15,20,.75);color:var(--muted);border:1px solid var(--line)}
+  .viewer-hint{position:absolute;bottom:12px;right:14px;font-size:.72rem;color:#5d6b7d}
+
+  .results{margin-top:18px;padding:16px;border-radius:13px;background:rgba(0,224,164,.08);
+    border:1px solid rgba(0,224,164,.25)}
+  .results .big{font-size:1.5rem;font-weight:800;color:var(--accent);line-height:1.2}
+  .results .big small{font-size:.8rem;color:var(--muted);font-weight:400;display:block;margin-top:2px}
+  .results .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .results .cell{padding:10px 12px;border-radius:10px;background:#0e141b;border:1px solid var(--line)}
+  .results .cell .lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .results .cell .val{font-size:1.05rem;font-weight:700;margin-top:2px}
+  .results .cell .val span{font-size:.78rem;color:var(--muted);font-weight:400}
+
+  .warn{margin-top:12px;padding:10px 13px;border-radius:10px;font-size:.82rem;
+    background:rgba(255,180,0,.08);border:1px solid rgba(255,180,0,.3);color:#ffc94d}
+  .warn.ok{background:rgba(0,224,164,.08);border-color:rgba(0,224,164,.3);color:var(--accent)}
+
+  .sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .size-box{padding:12px;border-radius:10px;background:#0e141b;border:1px solid var(--line);text-align:center}
+  .size-box .n{font-size:1.2rem;font-weight:800;color:var(--accent2)}
+  .size-box .t{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;margin-top:20px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="60" height="60" rx="16" fill="#0e141b" stroke="#00e0a4" stroke-width="2"/>
+        <path d="M18 40V24" stroke="#00e0a4" stroke-width="4" stroke-linecap="round"/>
+        <path d="M27 46V18" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+        <path d="M36 42V22" stroke="#00e0a4" stroke-width="4" stroke-linecap="round"/>
+        <path d="M45 37V27" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text">High<span>Sound</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Калькуляторы</a>
+      <a href="box.html" class="active">Короб</a>
+      <a href="index.html#shop">Оборудование</a>
+      <a href="index.html#about">О проекте</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap page-head">
+  <h1>Короб для <em>сабвуфера</em></h1>
+  <p>Расчёт объёма и геометрии по параметрам Тиля-Смолла. Поддержка закрытого ящика (ЗЯ) и фазоинвертора (ФИ). 3D-визуализация обновляется в реальном времени — вращай мышью.</p>
+</div>
+
+<div class="wrap layout">
+
+  <!-- ЛЕВАЯ ПАНЕЛЬ: ПАРАМЕТРЫ -->
+  <div class="panel">
+    <h3><span class="ico">⚙️</span> Параметры расчёта</h3>
+
+    <div class="group-title">Динамик (Тиль-Смолл)</div>
+    <div class="row2">
+      <div class="field">
+        <label>Vas <span class="unit">л</span></label>
+        <input type="number" id="vas" value="30" min="1" step="0.1">
+      </div>
+      <div class="field">
+        <label>Fs <span class="unit">Гц</span></label>
+        <input type="number" id="fs" value="35" min="10" step="0.1">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Qts</label>
+        <input type="number" id="qts" value="0.45" min="0.1" max="1.5" step="0.01">
+      </div>
+      <div class="field">
+        <label>Диаметр <span class="unit">"</span></label>
+        <select id="dia">
+          <option value="8">8"</option>
+          <option value="10">10"</option>
+          <option value="12" selected>12"</option>
+          <option value="15">15"</option>
+          <option value="18">18"</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Вытесняемый объём динамика <span class="unit">л</span></label>
+      <input type="number" id="disp" value="2.5" min="0" step="0.1">
+    </div>
+
+    <div class="group-title">Оформление</div>
+    <div class="field">
+      <label>Тип короба</label>
+      <select id="boxType">
+        <option value="sealed" selected>Закрытый ящик (ЗЯ)</option>
+        <option value="vented">Фазоинвертор (ФИ)</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Целевая Qtc <span class="unit">ЗЯ</span></label>
+        <input type="number" id="qtc" value="0.707" min="0.5" max="1.2" step="0.001">
+      </div>
+      <div class="field" id="tuneField" style="display:none">
+        <label>Настройка ФИ <span class="unit">Гц</span></label>
+        <input type="number" id="tune" value="35" min="15" step="0.5">
+      </div>
+    </div>
+
+    <div class="group-title">Геометрия и материал</div>
+    <div class="field">
+      <label>Толщина стенок <span class="unit">мм</span></label>
+      <select id="wall">
+        <option value="16">16 мм (МДФ)</option>
+        <option value="18" selected>18 мм (МДФ)</option>
+        <option value="22">22 мм (МДФ)</option>
+        <option value="25">25 мм (фанера)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Пропорции короба (Ш : В : Г)</label>
+      <select id="ratio">
+        <option value="1:1:1">1 : 1 : 1 (куб)</option>
+        <option value="1.2:1:0.8">1.2 : 1 : 0.8</option>
+        <option value="1.4:1:0.7" selected>1.4 : 1 : 0.7 (плоский)</option>
+        <option value="1:1.2:0.9">1 : 1.2 : 0.9</option>
+      </select>
+    </div>
+
+    <div class="results" id="results">
+      <div class="big" id="volBig">— л<small>чистый объём</small></div>
+      <div class="grid2">
+        <div class="cell"><div class="lbl">Fc / Fb</div><div class="val" id="fcVal">— <span>Гц</span></div></div>
+        <div class="cell"><div class="lbl">Брутто</div><div class="val" id="grossVal">— <span>л</span></div></div>
+      </div>
+      <div class="sizes">
+        <div class="size-box"><div class="n" id="dimW">—</div><div class="t">Ширина, мм</div></div>
+        <div class="size-box"><div class="n" id="dimH">—</div><div class="t">Высота, мм</div></div>
+        <div class="size-box"><div class="n" id="dimD">—</div><div class="t">Глубина, мм</div></div>
+      </div>
+      <div class="warn" id="warnBox" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ПРАВАЯ ПАНЕЛЬ: 3D -->
+  <div class="panel" style="padding:0;overflow:hidden">
+    <div class="viewer">
+      <div class="viewer-badge">3D · вращай мышью</div>
+      <canvas id="canvas3d"></canvas>
+      <div class="viewer-hint">ЛКМ — вращение · колесо — зум</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <div>© 2026 High Sound. Расчёт короба для сабвуфера.</div>
+    <div><a href="index.html" style="color:var(--accent)">← Назад к калькуляторам</a></div>
+  </div>
+</footer>
+
+<!-- Three.js через CDN -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ============ 3D СЦЕНА ============ */
+const canvas = document.getElementById('canvas3d');
+const viewer = canvas.parentElement;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0e13);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
+camera.position.set(55, 40, 55);
+
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 20;
+controls.maxDistance = 250;
+
+/* свет */
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key = new THREE.DirectionalLight(0x00e0a4, 1.1); key.position.set(40, 60, 40); scene.add(key);
+const fill = new THREE.DirectionalLight(0x3b82f6, 0.7); fill.position.set(-40, 20, -30); scene.add(fill);
+const rim = new THREE.DirectionalLight(0xffffff, 0.4); rim.position.set(0, -40, 20); scene.add(rim);
+
+/* сетка-пол */
+const grid = new THREE.GridHelper(200, 20, 0x1f2937, 0x161d27);
+grid.position.y = -0.5;
+scene.add(grid);
+
+/* группа короба */
+const boxGroup = new THREE.Group();
+scene.add(boxGroup);
+
+let meshBody, meshFront, meshPort, meshSub;
+
+function clearGroup(g){
+  while(g.children.length){
+    const c = g.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material) c.material.dispose();
+  }
+}
+
+/* материалы */
+const matBody = new THREE.MeshStandardMaterial({
+  color:0x1b2431, roughness:0.75, metalness:0.15,
+  transparent:true, opacity:0.82
+});
+const matEdge = new THREE.LineBasicMaterial({color:0x00e0a4, transparent:true, opacity:0.55});
+const matSub = new THREE.MeshStandardMaterial({color:0x0d1319, roughness:0.4, metalness:0.6});
+const matSubCone = new THREE.MeshStandardMaterial({color:0x232c38, roughness:0.6, metalness:0.3});
+const matPort = new THREE.MeshStandardMaterial({color:0x3b82f6, roughness:0.5, metalness:0.4, transparent:true, opacity:0.7});
+
+/* Строим короб по внутренним размерам (мм) */
+function buildBox(wmm, hmm, dmm, wallmm, type, subDia){
+  clearGroup(boxGroup);
+
+  // переводим в условные единицы (1 ед = 10 мм)
+  const W = wmm/10, H = hmm/10, D = dmm/10;
+  const wall = wallmm/10;
+
+  // внешние габариты
+  const We = W + wall*2, He = H + wall*2, De = D + wall*2;
+
+  // корпус (полупрозрачный)
+  const bodyGeo = new THREE.BoxGeometry(We, He, De);
+  meshBody = new THREE.Mesh(bodyGeo, matBody);
+  meshBody.position.y = He/2;
+  boxGroup.add(meshBody);
+
+  // рёбра
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(bodyGeo), matEdge);
+  edges.position.y = He/2;
+  boxGroup.add(edges);
+
+  // передняя панель (чуть темнее) — плоскость на передней грани
+  const frontGeo = new THREE.PlaneGeometry(We*0.98, He*0.98);
+  const frontMat = new THREE.MeshStandardMaterial({
+    color:0x121820, roughness:0.9, metalness:0.1,
+    transparent:true, opacity:0.9, side:THREE.DoubleSide
+  });
+  meshFront = new THREE.Mesh(frontGeo, frontMat);
+  meshFront.position.set(0, He/2, De/2 + 0.05);
+  boxGroup.add(meshFront);
+
+  // сабвуфер (диск) на передней панели
+  const subR = Math.min(We, He) * 0.22;
+  const subGeo = new THREE.CylinderGeometry(subR, subR, 0.6, 48);
+  meshSub = new THREE.Mesh(subGeo, matSub);
+  meshSub.rotation.x = Math.PI/2;
+  meshSub.position.set(-We*0.18, He*0.5, De/2 + 0.4);
+  boxGroup.add(meshSub);
+
+  // конус (внутренний круг)
+  const coneGeo = new THREE.CylinderGeometry(subR*0.6, subR*0.75, 0.4, 48);
+  const cone = new THREE.Mesh(coneGeo, matSubCone);
+  cone.rotation.x = Math.PI/2;
+  cone.position.set(-We*0.18, He*0.5, De/2 + 0.7);
+  boxGroup.add(cone);
+
+  // центральный колпачок
+  const capGeo = new THREE.SphereGeometry(subR*0.28, 24, 16);
+  const cap = new THREE.Mesh(capGeo, matSub);
+  cap.position.set(-We*0.18, He*0.5, De/2 + 0.9);
+  boxGroup.add(cap);
+
+  // фазоинвертор (труба) — если выбран ФИ
+  if (type === 'vented'){
+    const portR = Math.min(We, He) * 0.09;
+    const portLen = De * 0.7;
+    const portGeo = new THREE.CylinderGeometry(portR, portR, portLen, 32, 1, true);
+    meshPort = new THREE.Mesh(portGeo, matPort);
+    meshPort.rotation.x = Math.PI/2;
+    meshPort.position.set(We*0.22, He*0.35, De/2 - portLen/2 + 0.3);
+    boxGroup.add(meshPort);
+
+    // кольцо на передней панели
+    const ringGeo = new THREE.TorusGeometry(portR, portR*0.14, 16, 40);
+    const ring = new THREE.Mesh(ringGeo, matPort);
+    ring.position.set(We*0.22, He*0.35, De/2 + 0.3);
+    boxGroup.add(ring);
+  }
+
+  // подгоняем камеру под размер
+  const maxDim = Math.max(We, He, De);
+  const dist = maxDim * 2.2;
+  camera.position.set(dist*0.7, dist*0.55, dist*0.7);
+  controls.target.set(0, He/2, 0);
+  controls.update();
+}
+
+/* ============ РАСЧЁТ ============ */
+const els = {
+  vas: document.getElementById('vas'),
+  fs: document.getElementById('fs'),
+  qts: document.getElementById('qts'),
+  dia: document.getElementById('dia'),
+  disp: document.getElementById('disp'),
+  boxType: document.getElementById('boxType'),
+  qtc: document.getElementById('qtc'),
+  tune: document.getElementById('tune'),
+  tuneField: document.getElementById('tuneField'),
+  wall: document.getElementById('wall'),
+  ratio: document.getElementById('ratio'),
+  volBig: document.getElementById('volBig'),
+  fcVal: document.getElementById('fcVal'),
+  grossVal: document.getElementById('grossVal'),
+  dimW: document.getElementById('dimW'),
+  dimH: document.getElementById('dimH'),
+  dimD: document.getElementById('dimD'),
+  warnBox: document.getElementById('warnBox')
+};
+
+function parseRatio(s){
+  const p = s.split(':').map(Number);
+  return {w:p[0], h:p[1], d:p[2]};
+}
+
+function calc(){
+  const Vas = +els.vas.value || 1;
+  const Fs  = +els.fs.value || 30;
+  const Qts = +els.qts.value || 0.4;
+  const disp = +els.disp.value || 0;
+  const type = els.boxType.value;
+  const wallmm = +els.wall.value;
+  const ratio = parseRatio(els.ratio.value);
+
+  let Vb, Fc, warn = '';
+
+  if (type === 'sealed'){
+    const Qtc = +els.qtc.value || 0.707;
+    const ratioQ = (Qtc*Qtc)/(Qts*Qts) - 1;
+    Vb = ratioQ > 0 ? Vas / ratioQ : Vas * 1.5;
+    Fc = Fs * Math.sqrt(1 + Vas / Vb);
+    if (Qtc < 0.6) warn = 'Qtc ниже 0.6 — очень «мягкий» бас, но большая нагрузка на динамик.';
+    else if (Qtc > 1.0) warn = 'Qtc выше 1.0 — подъём на низких, но возможен «бубнёж».';
+    else warn = 'Qtc в оптимальном диапазоне (0.6–0.8) — ровный бас.';
+  } else {
+    // ФИ: упрощённая модель — объём и настройка
+    const tune = +els.tune.value || 35;
+    // эмпирика: Vb ≈ 1.5 * Vas для типичной настройки; корректируем по tune/Fs
+    Vb = Vas * (1.5 * Math.pow(Fs / tune, 1.4));
+    Vb = Math.max(5, Vb);
+    Fc = tune;
+    const ratioTune = tune / Fs;
+    if (ratioTune < 0.7) warn = 'Настройка ниже 0.7·Fs — риск «разболтать» динамик ниже резонанса.';
+    else if (ratioTune > 1.3) warn = 'Настройка выше 1.3·Fs — потеря глубокого баса.';
+    else warn = 'Настройка в разумных пределах относительно Fs.';
+  }
+
+  // брутто = чистый + вытеснение динамика + стенки (упрощённо)
+  const gross = Vb + disp; // л (чистый + динамик)
+  // внешние габариты: подбираем стороны по пропорциям под брутто (в литрах)
+  // объём внешний = gross * 1000 (см³) + объём стенок — учтём итеративно
+  const wall = wallmm / 10; // см
+  // решаем: (W+2w)(H+2w)(D+2w) = gross*1000, где W:H:D = ratio
+  // пусть базовая единица k: W = k*wr, H = k*hr, D = k*dr
+  const wr = ratio.w, hr = ratio.h, dr = ratio.d;
+  // уравнение: (k*wr+2w)(k*hr+2w)(k*dr+2w) = V (см³)
+  const V = gross * 1000;
+  // бинарный поиск k
+  let lo = 0.1, hi = 200;
+  for (let i=0;i<60;i++){
+    const k = (lo+hi)/2;
+    const vol = (k*wr + 2*wall) * (k*hr + 2*wall) * (k*dr + 2*wall);
+    if (vol < V) lo = k; else hi = k;
+  }
+  const k = (lo+hi)/2;
+  // внутренние размеры (см)
+  const Wi = k*wr, Hi = k*hr, Di = k*dr;
+  // внешние (см)
+  const We = Wi + 2*wall, He = Hi + 2*wall, De = Di + 2*wall;
+
+  // вывод
+  els.volBig.innerHTML = `${Vb.toFixed(1)} л<small>чистый объём${type==='vented' ? ' (ФИ)' : ' (ЗЯ)'}</small>`;
+  els.fcVal.innerHTML = `${Fc.toFixed(1)} <span>Гц</span>`;
+  els.grossVal.innerHTML = `${(We*He*De/1000).toFixed(1)} <span>л</span>`;
+  els.dimW.textContent = Math.round(We*10);
+  els.dimH.textContent = Math.round(He*10);
+  els.dimD.textContent = Math.round(De*10);
+
+  els.warnBox.style.display = 'block';
+  els.warnBox.textContent = warn;
+  els.warnBox.className = 'warn' + (warn.includes('оптимальном') || warn.includes('разумных') ? ' ok' : '');
+
+  // 3D — по внутренним размерам (мм)
+  buildBox(Math.round(Wi*10), Math.round(Hi*10), Math.round(Di*10), wallmm, type, +els.dia.value);
+}
+
+/* переключение поля настройки ФИ */
+els.boxType.addEventListener('change', () => {
+  els.tuneField.style.display = els.boxType.value === 'vented' ? 'block' : 'none';
+  calc();
+});
+
+/* все инпуты */
+['vas','fs','qts','dia','disp','qtc','tune','wall','ratio'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+
+/* ============ РЕНДЕР-ЛУП ============ */
+function resize(){
+  const r = viewer.getBoundingClientRect();
+  const w = r.width, h = Math.max(420, r.height);
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+/* старт */
+resize();
+calc();
+animate();
+</script>
+</body>
+</html>

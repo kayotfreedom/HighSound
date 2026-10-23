@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High Sound — калькуляторы автозвука</title>
+<style>
+  :root{
+    --bg:#0b0f14; --bg-soft:#121820; --card:#161d27; --line:#232c38;
+    --text:#e8eef6; --muted:#8a97a8; --accent:#00e0a4; --accent2:#3b82f6;
+    --radius:18px; --shadow:0 10px 40px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(59,130,246,.18), transparent 60%),
+      radial-gradient(900px 500px at 0% 10%, rgba(0,224,164,.12), transparent 60%),
+      var(--bg);
+    color:var(--text); line-height:1.55; min-height:100vh;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+  header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(11,15,20,.72);border-bottom:1px solid var(--line);}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo svg{width:40px;height:40px;flex:none}
+  .logo-text{font-weight:800;font-size:1.25rem;letter-spacing:.5px}
+  .logo-text span{color:var(--accent)}
+  .nav-links{display:flex;gap:26px;font-size:.95rem;color:var(--muted)}
+  .nav-links a:hover{color:var(--text)}
+  .nav-links a.active{color:var(--accent)}
+  @media(max-width:760px){.nav-links{display:none}}
+
+  .hero{padding:70px 0 40px;text-align:center}
+  .hero h1{font-size:clamp(2rem,4.5vw,3.4rem);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:18px}
+  .hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--muted);max-width:620px;margin:0 auto;font-size:1.08rem}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;
+    border:1px solid var(--line);background:var(--bg-soft);font-size:.82rem;color:var(--muted);margin-bottom:22px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+
+  section{padding:56px 0}
+  .sec-head{margin-bottom:34px}
+  .sec-head h2{font-size:1.9rem;font-weight:800;letter-spacing:-.5px}
+  .sec-head p{color:var(--muted);margin-top:6px}
+
+  .calc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px}
+  .card{background:linear-gradient(180deg,var(--card),var(--bg-soft));border:1px solid var(--line);
+    border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);transition:.25s}
+  .card:hover{transform:translateY(-3px);border-color:#2f3b4b}
+  .card h3{font-size:1.15rem;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+  .card h3 .ico{width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;
+    font-size:1rem;background:rgba(0,224,164,.12);color:var(--accent)}
+  .card .hint{color:var(--muted);font-size:.86rem;margin-bottom:18px}
+
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.3px}
+  .field input,.field select{width:100%;padding:11px 13px;border-radius:11px;background:#0e141b;
+    border:1px solid var(--line);color:var(--text);font-size:.95rem;font-family:inherit;outline:none;transition:.2s}
+  .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,224,164,.12)}
+  .field option{background:#0e141b}
+
+  .result{margin-top:18px;padding:16px;border-radius:13px;background:rgba(0,224,164,.08);
+    border:1px solid rgba(0,224,164,.25);font-size:.95rem}
+  .result b{color:var(--accent);font-size:1.35rem;display:block;margin-top:4px}
+  .result small{color:var(--muted)}
+
+  .pair-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .pair-row .idx{width:26px;height:26px;border-radius:8px;background:#0e141b;border:1px solid var(--line);
+    display:grid;place-items:center;font-size:.78rem;color:var(--muted);flex:none}
+  .pair-row select{flex:1;padding:9px 11px;border-radius:10px;background:#0e141b;border:1px solid var(--line);
+    color:var(--text);font-family:inherit;font-size:.9rem;outline:none}
+  .pair-row select:focus{border-color:var(--accent)}
+  .pair-row input{width:70px;padding:9px 11px;border-radius:10px;background:#0e141b;border:1px solid var(--line);
+    color:var(--text);font-family:inherit;font-size:.9rem;outline:none;text-align:center}
+  .pair-row input:focus{border-color:var(--accent)}
+  .pair-row .del{width:30px;height:30px;border-radius:8px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);
+    color:#ff6b6b;cursor:pointer;font-size:1rem;line-height:1;flex:none;transition:.2s}
+  .pair-row .del:hover{background:rgba(255,80,80,.2)}
+  .add-btn{width:100%;padding:11px;border-radius:11px;border:1px dashed #334052;background:transparent;
+    color:var(--accent);font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;transition:.2s;margin-top:4px}
+  .add-btn:hover{border-color:var(--accent);background:rgba(0,224,164,.06)}
+
+  .box-cta{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    margin-top:24px;padding:22px 26px;border-radius:var(--radius);
+    background:linear-gradient(90deg, rgba(0,224,164,.1), rgba(59,130,246,.1));
+    border:1px solid var(--line)}
+  .box-cta h3{font-size:1.1rem}
+  .box-cta p{color:var(--muted);font-size:.88rem;margin-top:4px}
+  .cta-btn{padding:11px 22px;border-radius:11px;background:linear-gradient(90deg,var(--accent),#00b586);
+    color:#04120e;font-weight:700;font-size:.9rem;white-space:nowrap}
+
+  .partner-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+  .p-card{background:var(--card);border:1px dashed #334052;border-radius:var(--radius);padding:22px;
+    position:relative;transition:.25s}
+  .p-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .p-tag{position:absolute;top:14px;right:14px;font-size:.68rem;letter-spacing:.8px;font-weight:700;
+    padding:4px 9px;border-radius:6px;background:rgba(59,130,246,.15);color:#7cb3ff}
+  .p-thumb{height:110px;border-radius:12px;margin-bottom:16px;background:linear-gradient(135deg,#1c2531,#131a23);
+    display:grid;place-items:center;color:#3d4a5c;font-size:2rem}
+  .p-card h4{font-size:1rem;margin-bottom:6px}
+  .p-card p{font-size:.85rem;color:var(--muted);margin-bottom:16px}
+  .p-btn{display:inline-block;padding:10px 18px;border-radius:10px;
+    background:linear-gradient(90deg,var(--accent),#00b586);color:#04120e;font-weight:700;font-size:.88rem;transition:.2s}
+  .p-btn:hover{filter:brightness(1.1)}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;margin-top:40px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="60" height="60" rx="16" fill="#0e141b" stroke="#00e0a4" stroke-width="2"/>
+        <path d="M18 40V24" stroke="#00e0a4" stroke-width="4" stroke-linecap="round"/>
+        <path d="M27 46V18" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+        <path d="M36 42V22" stroke="#00e0a4" stroke-width="4" stroke-linecap="round"/>
+        <path d="M45 37V27" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text">High<span>Sound</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="active">Калькуляторы</a>
+      <a href="box.html">Короб</a>
+      <a href="#shop">Оборудование</a>
+      <a href="#about">О проекте</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <div class="badge"><span class="dot"></span> Инструменты для автозвука</div>
+  <h1>Считай <em>правильно</em>.<br>Ставь <em>громко</em>.</h1>
+  <p>Калькуляторы для подбора проводов, подключения динамиков и настройки сабвуфера. Без формул — только результат.</p>
+</div>
+
+<section id="calculators">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Калькуляторы</h2>
+      <p>Введи параметры — получи готовый ответ.</p>
+    </div>
+
+    <div class="calc-grid">
+
+      <!-- 1. СИЛОВОЙ КАБЕЛЬ -->
+      <div class="card">
+        <h3><span class="ico">⚡</span> Силовой кабель</h3>
+        <p class="hint">Сечение провода от АКБ к усилителю и номинал предохранителя.</p>
+        <div class="field">
+          <label>Мощность усилителя, Вт (суммарно)</label>
+          <input type="number" id="ampPower" value="1000" min="1">
+        </div>
+        <div class="field">
+          <label>Длина кабеля от АКБ, м</label>
+          <input type="number" id="ampLength" value="4" min="0.5" step="0.5">
+        </div>
+        <div class="result" id="powerResult"><small>Результат появится здесь</small></div>
+      </div>
+
+      <!-- 2. СОПРОТИВЛЕНИЕ ДИНАМИКОВ -->
+      <div class="card">
+        <h3><span class="ico">🔊</span> Сопротивление динамиков</h3>
+        <p class="hint">Добавляй пары: внутри пары — последовательно, пары между собой — параллельно.</p>
+        <div id="pairs"></div>
+        <button class="add-btn" onclick="addPair()">＋ Добавить пару динамиков</button>
+        <div class="result" id="spkResult"><small>Результат появится здесь</small></div>
+      </div>
+
+      <!-- 3. АКУСТИЧЕСКИЙ КАБЕЛЬ -->
+      <div class="card">
+        <h3><span class="ico">🎚️</span> Акустический кабель</h3>
+        <p class="hint">Подбор сечения по сопротивлению нагрузки и длине до динамика.</p>
+        <div class="field">
+          <label>Сопротивление нагрузки, Ом</label>
+          <select id="acImp">
+            <option value="1">1 Ом</option>
+            <option value="2">2 Ом</option>
+            <option value="4" selected>4 Ом</option>
+            <option value="8">8 Ом</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Длина провода до динамика, м</label>
+          <input type="number" id="acLen" value="4" min="0.5" step="0.5">
+        </div>
+        <div class="result" id="acResult"><small>Результат появится здесь</small></div>
+      </div>
+
+      <!-- 4. ПОДБОР УСИЛИТЕЛЯ -->
+      <div class="card">
+        <h3><span class="ico">🎛️</span> Подбор усилителя</h3>
+        <p class="hint">Какую мощность усилителя нужно на канал при данной нагрузке.</p>
+        <div class="field">
+          <label>Мощность динамика (RMS), Вт</label>
+          <input type="number" id="spkRms" value="80" min="1">
+        </div>
+        <div class="field">
+          <label>Количество динамиков на канал</label>
+          <input type="number" id="spkPerCh" value="2" min="1">
+        </div>
+        <div class="field">
+          <label>Сопротивление канала, Ом</label>
+          <input type="number" id="chImp" value="4" min="0.5" step="0.5">
+        </div>
+        <div class="result" id="ampSelResult"><small>Результат появится здесь</small></div>
+      </div>
+
+    </div>
+
+    <!-- CTA на страницу короба -->
+    <a href="box.html" class="box-cta">
+      <div>
+        <h3>📦 Расчёт короба для сабвуфера</h3>
+        <p>Vas, Fs, Qts, Qtc, тип оформления, толщина стенок и 3D-визуализация — на отдельной странице.</p>
+      </div>
+      <span class="cta-btn">Открыть расчёт →</span>
+    </a>
+  </div>
+</section>
+
+<section id="shop">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Оборудование</h2>
+      <p>Карточки-заглушки — замени ссылки <code>href="#"</code> на партнёрские.</p>
+    </div>
+    <div class="partner-grid">
+      <div class="p-card">
+        <span class="p-tag">ПАРТНЁР</span>
+        <div class="p-thumb">🔌</div>
+        <h4>Силовой кабель 4 AWG (25 мм²)</h4>
+        <p>Медь OFC, для усилителей до 1500 Вт. Длина 5 м.</p>
+        <a class="p-btn" href="#" target="_blank" rel="nofollow sponsored">Купить</a>
+      </div>
+      <div class="p-card">
+        <span class="p-tag">ПАРТНЁР</span>
+        <div class="p-thumb">🔊</div>
+        <h4>Акустический кабель 14 AWG</h4>
+        <p>Бескислородная медь, 2×2.5 мм², прозрачный ПВХ.</p>
+        <a class="p-btn" href="#" target="_blank" rel="nofollow sponsored">Купить</a>
+      </div>
+      <div class="p-card">
+        <span class="p-tag">ПАРТНЁР</span>
+        <div class="p-thumb">🛡️</div>
+        <h4>Предохранитель ANL 150 А</h4>
+        <p>С колбой и держателем, защита силовой линии у АКБ.</p>
+        <a class="p-btn" href="#" target="_blank" rel="nofollow sponsored">Купить</a>
+      </div>
+      <div class="p-card">
+        <span class="p-tag">ПАРТНЁР</span>
+        <div class="p-thumb">📦</div>
+        <h4>Короб ЗЯ под 12" сабвуфер</h4>
+        <p>МДФ 18 мм, карпет, клеммы. Готовый объём 25–35 л.</p>
+        <a class="p-btn" href="#" target="_blank" rel="nofollow sponsored">Купить</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>О проекте</h2>
+      <p>High Sound — инструменты для тех, кто собирает автозвук сам. Калькуляторы считают по реальным формулам: ток, сечение, сопротивление, объём короба. Никакой воды.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>© 2026 High Sound. Инструменты для автозвука.</div>
+    <div>Сделано с ⚡ и медью OFC</div>
+  </div>
+</footer>
+
+<script>
+/* 1. СИЛОВОЙ КАБЕЛЬ */
+function calcPower(){
+  const P = +document.getElementById('ampPower').value || 0;
+  const L = +document.getElementById('ampLength').value || 1;
+  const I = P / (12 * 0.8);
+  let section;
+  if (I <= 50)       section = L <= 3 ? 6  : L <= 5 ? 10 : 16;
+  else if (I <= 80)  section = L <= 3 ? 10 : L <= 5 ? 16 : 25;
+  else if (I <= 120) section = L <= 3 ? 16 : L <= 5 ? 25 : 35;
+  else if (I <= 200) section = L <= 3 ? 25 : L <= 5 ? 35 : 50;
+  else               section = L <= 3 ? 35 : L <= 5 ? 50 : 70;
+  const fuse = Math.ceil(I * 1.25 / 10) * 10;
+  document.getElementById('powerResult').innerHTML =
+    `Ток усилителя: <b>${I.toFixed(0)} А</b>
+     <small>Сечение: <b style="display:inline;font-size:1rem">${section} мм²</b> ·
+     Предохранитель у АКБ: <b style="display:inline;font-size:1rem">${fuse} А</b></small>`;
+}
+
+/* 2. СОПРОТИВЛЕНИЕ — КОНФИГУРАТОР */
+let pairId = 0;
+const pairsEl = document.getElementById('pairs');
+
+function addPair(ohm = 4, count = 2){
+  const id = ++pairId;
+  const row = document.createElement('div');
+  row.className = 'pair-row';
+  row.dataset.id = id;
+  row.innerHTML = `
+    <div class="idx">${pairsEl.children.length + 1}</div>
+    <select class="p-ohm">
+      <option value="1"${ohm==1?' selected':''}>1 Ом</option>
+      <option value="2"${ohm==2?' selected':''}>2 Ом</option>
+      <option value="4"${ohm==4?' selected':''}>4 Ом</option>
+      <option value="8"${ohm==8?' selected':''}>8 Ом</option>
+    </select>
+    <input type="number" class="p-count" value="${count}" min="1" max="8" title="Динамиков в паре (последовательно)">
+    <button class="del" title="Удалить пару" onclick="removePair(this)">✕</button>
+  `;
+  pairsEl.appendChild(row);
+  row.querySelector('.p-ohm').addEventListener('change', calcSpk);
+  row.querySelector('.p-count').addEventListener('input', calcSpk);
+  renumber();
+  calcSpk();
+}
+function removePair(btn){
+  if (pairsEl.children.length <= 1) return;
+  btn.closest('.pair-row').remove();
+  renumber(); calcSpk();
+}
+function renumber(){
+  [...pairsEl.children].forEach((r,i)=> r.querySelector('.idx').textContent = i+1);
+}
+function calcSpk(){
+  const rows = [...pairsEl.children];
+  if (!rows.length){ document.getElementById('spkResult').innerHTML = `<small>Добавь пару</small>`; return; }
+  let details = [], parallelSum = 0;
+  rows.forEach((row,i)=>{
+    const ohm = +row.querySelector('.p-ohm').value;
+    const cnt = Math.max(1, +row.querySelector('.p-count').value || 1);
+    const pairR = ohm * cnt;
+    parallelSum += 1 / pairR;
+    details.push(`Пара ${i+1}: ${cnt}×${ohm} = ${pairR} Ом`);
+  });
+  const total = 1 / parallelSum;
+  document.getElementById('spkResult').innerHTML =
+    `Итоговое сопротивление: <b>${total.toFixed(2)} Ом</b>
+     <small>${details.join(' · ')}</small>`;
+}
+
+/* 3. АКУСТИЧЕСКИЙ КАБЕЛЬ */
+function calcAc(){
+  const R = +document.getElementById('acImp').value;
+  const L = +document.getElementById('acLen').value || 1;
+  const maxR = R * 0.05;
+  const minSection = (0.0175 * 2 * L) / maxR;
+  const std = [0.5,0.75,1,1.5,2.5,4,6,10];
+  const section = std.find(s => s >= minSection) || 10;
+  document.getElementById('acResult').innerHTML =
+    `Рекомендуемое сечение: <b>${section} мм²</b>
+     <small>Макс. сопр. кабеля: ${maxR.toFixed(3)} Ом · мин. расчётное: ${minSection.toFixed(2)} мм²</small>`;
+}
+
+/* 4. ПОДБОР УСИЛИТЕЛЯ */
+function calcAmpSel(){
+  const rms = +document.getElementById('spkRms').value || 1;
+  const n   = +document.getElementById('spkPerCh').value || 1;
+  const imp = +document.getElementById('chImp').value || 4;
+  const totalPower = rms * n;
+  const minP = totalPower * 1.1, maxP = totalPower * 1.3;
+  document.getElementById('ampSelResult').innerHTML =
+    `Нужная мощность на канал: <b>${minP.toFixed(0)}–${maxP.toFixed(0)} Вт</b>
+     <small>Суммарная RMS: ${totalPower} Вт · нагрузка: ${imp} Ом</small>`;
+}
+
+['ampPower','ampLength'].forEach(id => document.getElementById(id).addEventListener('input', calcPower));
+['acImp','acLen'].forEach(id => document.getElementById(id).addEventListener('input', calcAc));
+['spkRms','spkPerCh','chImp'].forEach(id => document.getElementById(id).addEventListener('input', calcAmpSel));
+
+addPair(4,2);
+calcPower(); calcAc(); calcAmpSel();
+</script>
+</body>
+</html>

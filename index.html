@@ -70,21 +70,47 @@
   .result b{color:var(--accent);font-size:1.35rem;display:block;margin-top:4px}
   .result small{color:var(--muted)}
 
-  .pair-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-  .pair-row .idx{width:26px;height:26px;border-radius:8px;background:#0e141b;border:1px solid var(--line);
-    display:grid;place-items:center;font-size:.78rem;color:var(--muted);flex:none}
-  .pair-row select{flex:1;padding:9px 11px;border-radius:10px;background:#0e141b;border:1px solid var(--line);
-    color:var(--text);font-family:inherit;font-size:.9rem;outline:none}
+  /* --- конструктор сопротивления --- */
+  .builder{font-size:.9rem}
+  .node{border-radius:12px;padding:12px;margin-bottom:10px;position:relative}
+  .node.group{border:1px solid #2a3546;background:rgba(59,130,246,.05)}
+  .node.pair{border:1px solid #2a3546;background:rgba(0,224,164,.04)}
+  .node-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .node-title{font-weight:700;font-size:.82rem;color:var(--text);letter-spacing:.3px}
+  .node-title span{color:var(--muted);font-weight:400}
+  .node-head .spacer{flex:1}
+  .node-children{padding-left:14px;border-left:2px dashed #2a3546;margin-left:4px}
+  .node-children:empty{display:none}
+  .conn-select{padding:6px 9px;border-radius:8px;background:#0e141b;border:1px solid var(--line);
+    color:var(--text);font-family:inherit;font-size:.8rem;outline:none}
+  .conn-select:focus{border-color:var(--accent)}
+  .mini-btn{padding:6px 10px;border-radius:8px;background:#0e141b;border:1px solid var(--line);
+    color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer;transition:.2s;white-space:nowrap}
+  .mini-btn:hover{color:var(--text);border-color:var(--accent)}
+  .mini-btn.danger{background:rgba(255,80,80,.08);border-color:rgba(255,80,80,.3);color:#ff6b6b}
+  .mini-btn.danger:hover{background:rgba(255,80,80,.2)}
+  .pair-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .pair-row .idx{width:24px;height:24px;border-radius:7px;background:#0e141b;border:1px solid var(--line);
+    display:grid;place-items:center;font-size:.72rem;color:var(--muted);flex:none}
+  .pair-row select{padding:8px 10px;border-radius:9px;background:#0e141b;border:1px solid var(--line);
+    color:var(--text);font-family:inherit;font-size:.85rem;outline:none}
   .pair-row select:focus{border-color:var(--accent)}
-  .pair-row input{width:70px;padding:9px 11px;border-radius:10px;background:#0e141b;border:1px solid var(--line);
-    color:var(--text);font-family:inherit;font-size:.9rem;outline:none;text-align:center}
+  .pair-row input{width:62px;padding:8px 10px;border-radius:9px;background:#0e141b;border:1px solid var(--line);
+    color:var(--text);font-family:inherit;font-size:.85rem;outline:none;text-align:center}
   .pair-row input:focus{border-color:var(--accent)}
-  .pair-row .del{width:30px;height:30px;border-radius:8px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);
-    color:#ff6b6b;cursor:pointer;font-size:1rem;line-height:1;flex:none;transition:.2s}
+  .pair-row .del{width:28px;height:28px;border-radius:7px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);
+    color:#ff6b6b;cursor:pointer;font-size:.9rem;line-height:1;flex:none;transition:.2s}
   .pair-row .del:hover{background:rgba(255,80,80,.2)}
-  .add-btn{width:100%;padding:11px;border-radius:11px;border:1px dashed #334052;background:transparent;
-    color:var(--accent);font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;transition:.2s;margin-top:4px}
+  .pair-level{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(35,44,56,.6)}
+  .pair-level:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .pair-level-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .pair-level-head .lbl{font-size:.75rem;color:var(--muted);font-weight:600}
+  .pair-level-head select{padding:5px 8px;border-radius:7px;background:#0e141b;border:1px solid var(--line);
+    color:var(--text);font-family:inherit;font-size:.75rem;outline:none}
+  .add-btn{width:100%;padding:10px;border-radius:10px;border:1px dashed #334052;background:transparent;
+    color:var(--accent);font-family:inherit;font-weight:600;font-size:.85rem;cursor:pointer;transition:.2s;margin-top:4px}
   .add-btn:hover{border-color:var(--accent);background:rgba(0,224,164,.06)}
+  .add-btn.small{padding:7px;font-size:.78rem;margin-top:6px}
 
   .box-cta{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
     margin-top:24px;padding:22px 26px;border-radius:var(--radius);
@@ -166,12 +192,21 @@
         <div class="result" id="powerResult"><small>Результат появится здесь</small></div>
       </div>
 
-      <!-- 2. СОПРОТИВЛЕНИЕ ДИНАМИКОВ -->
-      <div class="card">
-        <h3><span class="ico">🔊</span> Сопротивление динамиков</h3>
-        <p class="hint">Добавляй пары: внутри пары — последовательно, пары между собой — параллельно.</p>
-        <div id="pairs"></div>
-        <button class="add-btn" onclick="addPair()">＋ Добавить пару динамиков</button>
+      <!-- 2. КОНСТРУКТОР СОПРОТИВЛЕНИЯ -->
+      <div class="card" style="grid-column:1/-1">
+        <h3><span class="ico">🔊</span> Сопротивление динамиков — конструктор</h3>
+        <p class="hint">
+          Создавай группы и пары, выбирай тип соединения на каждом уровне.
+          Соединение группы задаёт, как между собой соединяются её элементы (пары и вложенные группы).
+          Соединение внутри пары задаёт, как соединены динамики в этой паре.
+        </p>
+
+        <div class="builder">
+          <div id="rootGroup"></div>
+          <button class="add-btn" onclick="addChildToRoot('pair')">＋ Добавить пару в корневую группу</button>
+          <button class="add-btn" onclick="addChildToRoot('group')">＋ Добавить группу в корневую группу</button>
+        </div>
+
         <div class="result" id="spkResult"><small>Результат появится здесь</small></div>
       </div>
 
@@ -216,7 +251,6 @@
 
     </div>
 
-    <!-- CTA на страницу короба -->
     <a href="box.html" class="box-cta">
       <div>
         <h3>📦 Расчёт короба для сабвуфера</h3>
@@ -283,7 +317,9 @@
 </footer>
 
 <script>
-/* 1. СИЛОВОЙ КАБЕЛЬ */
+/* ============================================================
+   1. СИЛОВОЙ КАБЕЛЬ
+============================================================ */
 function calcPower(){
   const P = +document.getElementById('ampPower').value || 0;
   const L = +document.getElementById('ampLength').value || 1;
@@ -301,58 +337,349 @@ function calcPower(){
      Предохранитель у АКБ: <b style="display:inline;font-size:1rem">${fuse} А</b></small>`;
 }
 
-/* 2. СОПРОТИВЛЕНИЕ — КОНФИГУРАТОР */
-let pairId = 0;
-const pairsEl = document.getElementById('pairs');
+/* ============================================================
+   2. КОНСТРУКТОР СОПРОТИВЛЕНИЯ (дерево групп и пар)
+============================================================ */
+/*
+  Структура узла:
+    group = {
+      type: 'group',
+      connection: 'series' | 'parallel',   // как соединяются дети группы
+      children: [ ...pair | ...group ]
+    }
+    pair = {
+      type: 'pair',
+      connection: 'series' | 'parallel',   // как соединяются динамики внутри пары
+      items: [ {ohm, count}, ... ]          // динамики в паре
+    }
+*/
 
-function addPair(ohm = 4, count = 2){
-  const id = ++pairId;
-  const row = document.createElement('div');
-  row.className = 'pair-row';
-  row.dataset.id = id;
-  row.innerHTML = `
-    <div class="idx">${pairsEl.children.length + 1}</div>
-    <select class="p-ohm">
-      <option value="1"${ohm==1?' selected':''}>1 Ом</option>
-      <option value="2"${ohm==2?' selected':''}>2 Ом</option>
-      <option value="4"${ohm==4?' selected':''}>4 Ом</option>
-      <option value="8"${ohm==8?' selected':''}>8 Ом</option>
-    </select>
-    <input type="number" class="p-count" value="${count}" min="1" max="8" title="Динамиков в паре (последовательно)">
-    <button class="del" title="Удалить пару" onclick="removePair(this)">✕</button>
-  `;
-  pairsEl.appendChild(row);
-  row.querySelector('.p-ohm').addEventListener('change', calcSpk);
-  row.querySelector('.p-count').addEventListener('input', calcSpk);
-  renumber();
+let root = {
+  type: 'group',
+  connection: 'parallel',
+  children: []
+};
+
+let nodeSeq = 1;
+root.id = nodeSeq++;
+
+function newNode(type){
+  const n = { id: nodeSeq++, type };
+  if (type === 'group'){
+    n.connection = 'parallel';
+    n.children = [];
+  } else {
+    n.connection = 'series';
+    n.items = [{ ohm: 4, count: 2 }];
+  }
+  return n;
+}
+
+/* --- поиск узла по id (для операций) --- */
+function findNode(node, id){
+  if (node.id === id) return node;
+  if (node.type === 'group'){
+    for (const c of node.children){
+      const f = findNode(c, id);
+      if (f) return f;
+    }
+  }
+  return null;
+}
+function findParent(node, id){
+  if (node.type !== 'group') return null;
+  for (const c of node.children){
+    if (c.id === id) return node;
+    const f = findParent(c, id);
+    if (f) return f;
+  }
+  return null;
+}
+
+/* --- добавление в корень --- */
+function addChildToRoot(kind){
+  root.children.push(newNode(kind));
+  render();
+}
+
+/* --- добавление ребёнка в группу --- */
+function addChildToGroup(groupId, kind){
+  const g = findNode(root, groupId);
+  if (!g || g.type !== 'group') return;
+  g.children.push(newNode(kind));
+  render();
+}
+
+/* --- удаление узла --- */
+function removeNode(id){
+  if (id === root.id) return;
+  const parent = findParent(root, id);
+  if (!parent) return;
+  parent.children = parent.children.filter(c => c.id !== id);
+  render();
+}
+
+/* --- добавление динамика в пару --- */
+function addItemToPair(pairId){
+  const p = findNode(root, pairId);
+  if (!p || p.type !== 'pair') return;
+  p.items.push({ ohm: 4, count: 1 });
+  render();
+}
+/* --- удаление динамика из пары --- */
+function removeItemFromPair(pairId, idx){
+  const p = findNode(root, pairId);
+  if (!p || p.type !== 'pair') return;
+  if (p.items.length <= 1) return;
+  p.items.splice(idx, 1);
+  render();
+}
+
+/* --- обновление значений --- */
+function setNodeConn(id, val){
+  const n = findNode(root, id);
+  if (!n) return;
+  n.connection = val;
   calcSpk();
 }
-function removePair(btn){
-  if (pairsEl.children.length <= 1) return;
-  btn.closest('.pair-row').remove();
-  renumber(); calcSpk();
-}
-function renumber(){
-  [...pairsEl.children].forEach((r,i)=> r.querySelector('.idx').textContent = i+1);
-}
-function calcSpk(){
-  const rows = [...pairsEl.children];
-  if (!rows.length){ document.getElementById('spkResult').innerHTML = `<small>Добавь пару</small>`; return; }
-  let details = [], parallelSum = 0;
-  rows.forEach((row,i)=>{
-    const ohm = +row.querySelector('.p-ohm').value;
-    const cnt = Math.max(1, +row.querySelector('.p-count').value || 1);
-    const pairR = ohm * cnt;
-    parallelSum += 1 / pairR;
-    details.push(`Пара ${i+1}: ${cnt}×${ohm} = ${pairR} Ом`);
-  });
-  const total = 1 / parallelSum;
-  document.getElementById('spkResult').innerHTML =
-    `Итоговое сопротивление: <b>${total.toFixed(2)} Ом</b>
-     <small>${details.join(' · ')}</small>`;
+function setItem(pairId, idx, field, val){
+  const p = findNode(root, pairId);
+  if (!p || p.type !== 'pair') return;
+  if (field === 'ohm') p.items[idx].ohm = +val;
+  if (field === 'count') p.items[idx].count = Math.max(1, +val || 1);
+  calcSpk();
 }
 
-/* 3. АКУСТИЧЕСКИЙ КАБЕЛЬ */
+/* --- рекурсивный расчёт --- */
+function calcNode(node){
+  if (node.type === 'pair'){
+    // внутри пары: динамики соединяются согласно node.connection
+    const values = [];
+    node.items.forEach(it => {
+      // динамик с сопротивлением it.ohm, включённый it.count раз
+      // "count" динамиков внутри одного блока соединяем последовательно
+      // (это классическая трактовка: пара = N динамиков последовательно)
+      for (let i = 0; i < it.count; i++) values.push(it.ohm);
+    });
+    if (!values.length) return Infinity;
+    if (node.connection === 'series'){
+      return values.reduce((a, b) => a + b, 0);
+    } else {
+      // параллельно
+      const inv = values.reduce((a, b) => a + 1/b, 0);
+      return inv > 0 ? 1/inv : Infinity;
+    }
+  } else {
+    // группа: дети соединяются согласно node.connection
+    const values = node.children.map(calcNode).filter(v => isFinite(v) && v > 0);
+    if (!values.length) return Infinity;
+    if (node.connection === 'series'){
+      return values.reduce((a, b) => a + b, 0);
+    } else {
+      const inv = values.reduce((a, b) => a + 1/b, 0);
+      return inv > 0 ? 1/inv : Infinity;
+    }
+  }
+}
+
+/* --- краткое описание соединения --- */
+function connLabel(c){ return c === 'series' ? 'последовательно' : 'параллельно'; }
+function connShort(c){ return c === 'series' ? 'посл.' : 'пар.'; }
+
+/* --- рендер узла --- */
+function renderNode(node, parentIsRoot = false){
+  const wrap = document.createElement('div');
+
+  if (node.type === 'group'){
+    wrap.className = 'node group';
+
+    const head = document.createElement('div');
+    head.className = 'node-head';
+
+    const title = document.createElement('div');
+    title.className = 'node-title';
+    title.innerHTML = parentIsRoot
+      ? `Корневая группа <span>· соединение элементов</span>`
+      : `Группа <span>#${node.id}</span>`;
+    head.appendChild(title);
+
+    const spacer = document.createElement('div');
+    spacer.className = 'spacer';
+    head.appendChild(spacer);
+
+    // выбор соединения группы
+    const connSel = document.createElement('select');
+    connSel.className = 'conn-select';
+    connSel.innerHTML = `
+      <option value="series"${node.connection==='series'?' selected':''}>последовательно</option>
+      <option value="parallel"${node.connection==='parallel'?' selected':''}>параллельно</option>
+    `;
+    connSel.addEventListener('change', () => setNodeConn(node.id, connSel.value));
+    head.appendChild(connSel);
+
+    if (!parentIsRoot){
+      const del = document.createElement('button');
+      del.className = 'mini-btn danger';
+      del.textContent = '✕';
+      del.title = 'Удалить группу';
+      del.addEventListener('click', () => removeNode(node.id));
+      head.appendChild(del);
+    }
+
+    wrap.appendChild(head);
+
+    // дети
+    const childrenWrap = document.createElement('div');
+    childrenWrap.className = 'node-children';
+    node.children.forEach(ch => childrenWrap.appendChild(renderNode(ch, false)));
+    wrap.appendChild(childrenWrap);
+
+    // кнопки добавления
+    const btnRow = document.createElement('div');
+    btnRow.style.display = 'flex';
+    btnRow.style.gap = '6px';
+    btnRow.style.marginTop = '8px';
+
+    const addPairBtn = document.createElement('button');
+    addPairBtn.className = 'mini-btn';
+    addPairBtn.textContent = '＋ пара';
+    addPairBtn.addEventListener('click', () => addChildToGroup(node.id, 'pair'));
+    btnRow.appendChild(addPairBtn);
+
+    const addGroupBtn = document.createElement('button');
+    addGroupBtn.className = 'mini-btn';
+    addGroupBtn.textContent = '＋ группа';
+    addGroupBtn.addEventListener('click', () => addChildToGroup(node.id, 'group'));
+    btnRow.appendChild(addGroupBtn);
+
+    wrap.appendChild(btnRow);
+
+  } else {
+    // pair
+    wrap.className = 'node pair';
+
+    const head = document.createElement('div');
+    head.className = 'node-head';
+
+    const title = document.createElement('div');
+    title.className = 'node-title';
+    title.innerHTML = `Пара <span>#${node.id}</span>`;
+    head.appendChild(title);
+
+    const spacer = document.createElement('div');
+    spacer.className = 'spacer';
+    head.appendChild(spacer);
+
+    // соединение внутри пары
+    const connSel = document.createElement('select');
+    connSel.className = 'conn-select';
+    connSel.innerHTML = `
+      <option value="series"${node.connection==='series'?' selected':''}>внутри: последовательно</option>
+      <option value="parallel"${node.connection==='parallel'?' selected':''}>внутри: параллельно</option>
+    `;
+    connSel.addEventListener('change', () => setNodeConn(node.id, connSel.value));
+    head.appendChild(connSel);
+
+    const del = document.createElement('button');
+    del.className = 'mini-btn danger';
+    del.textContent = '✕';
+    del.title = 'Удалить пару';
+    del.addEventListener('click', () => removeNode(node.id));
+    head.appendChild(del);
+
+    wrap.appendChild(head);
+
+    // динамики в паре
+    node.items.forEach((it, idx) => {
+      const row = document.createElement('div');
+      row.className = 'pair-row';
+
+      const idxEl = document.createElement('div');
+      idxEl.className = 'idx';
+      idxEl.textContent = idx + 1;
+      row.appendChild(idxEl);
+
+      const ohmSel = document.createElement('select');
+      [1,2,4,8].forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o; opt.textContent = o + ' Ом';
+        if (o === it.ohm) opt.selected = true;
+        ohmSel.appendChild(opt);
+      });
+      ohmSel.addEventListener('change', () => setItem(node.id, idx, 'ohm', ohmSel.value));
+      row.appendChild(ohmSel);
+
+      const cntInp = document.createElement('input');
+      cntInp.type = 'number';
+      cntInp.min = 1;
+      cntInp.value = it.count;
+      cntInp.title = 'Количество таких динамиков (последовательно внутри блока)';
+      cntInp.addEventListener('input', () => setItem(node.id, idx, 'count', cntInp.value));
+      row.appendChild(cntInp);
+
+      if (node.items.length > 1){
+        const delIt = document.createElement('button');
+        delIt.className = 'del';
+        delIt.textContent = '✕';
+        delIt.title = 'Удалить динамик';
+        delIt.addEventListener('click', () => removeItemFromPair(node.id, idx));
+        row.appendChild(delIt);
+      }
+
+      wrap.appendChild(row);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'mini-btn';
+    addBtn.style.marginTop = '6px';
+    addBtn.textContent = '＋ динамик';
+    addBtn.addEventListener('click', () => addItemToPair(node.id));
+    wrap.appendChild(addBtn);
+  }
+
+  return wrap;
+}
+
+/* --- главный рендер --- */
+function render(){
+  const host = document.getElementById('rootGroup');
+  host.innerHTML = '';
+  host.appendChild(renderNode(root, true));
+  calcSpk();
+}
+
+/* --- расчёт итога --- */
+function calcSpk(){
+  const total = calcNode(root);
+  const res = document.getElementById('spkResult');
+
+  if (!isFinite(total) || total <= 0){
+    res.innerHTML = `<small>Добавь хотя бы одну пару, чтобы увидеть результат.</small>`;
+    return;
+  }
+
+  // описание верхнего уровня
+  const desc = root.children.map(ch => {
+    if (ch.type === 'pair'){
+      return `пара ${ch.id} (${connShort(ch.connection)} внутри)`;
+    } else {
+      return `группа ${ch.id} (${connShort(ch.connection)})`;
+    }
+  }).join(` ${connShort(root.connection)} `);
+
+  // предупреждение о низком сопротивлении
+  let warn = '';
+  if (total < 1) warn = '<br><span style="color:#ff6b6b">⚠ Ниже 1 Ом — большинство усилителей не рассчитаны на такую нагрузку.</span>';
+  else if (total < 2) warn = '<br><span style="color:#ffc94d">⚠ Ниже 2 Ом — проверь стабильность усилителя.</span>';
+
+  res.innerHTML =
+    `Итоговое сопротивление: <b>${total.toFixed(2)} Ом</b>
+     <small>Схема: ${desc || '—'}${warn}</small>`;
+}
+
+/* ============================================================
+   3. АКУСТИЧЕСКИЙ КАБЕЛЬ
+============================================================ */
 function calcAc(){
   const R = +document.getElementById('acImp').value;
   const L = +document.getElementById('acLen').value || 1;
@@ -365,7 +692,9 @@ function calcAc(){
      <small>Макс. сопр. кабеля: ${maxR.toFixed(3)} Ом · мин. расчётное: ${minSection.toFixed(2)} мм²</small>`;
 }
 
-/* 4. ПОДБОР УСИЛИТЕЛЯ */
+/* ============================================================
+   4. ПОДБОР УСИЛИТЕЛЯ
+============================================================ */
 function calcAmpSel(){
   const rms = +document.getElementById('spkRms').value || 1;
   const n   = +document.getElementById('spkPerCh').value || 1;
@@ -377,12 +706,34 @@ function calcAmpSel(){
      <small>Суммарная RMS: ${totalPower} Вт · нагрузка: ${imp} Ом</small>`;
 }
 
+/* ============================================================
+   СЛУШАТЕЛИ И СТАРТ
+============================================================ */
 ['ampPower','ampLength'].forEach(id => document.getElementById(id).addEventListener('input', calcPower));
 ['acImp','acLen'].forEach(id => document.getElementById(id).addEventListener('input', calcAc));
 ['spkRms','spkPerCh','chImp'].forEach(id => document.getElementById(id).addEventListener('input', calcAmpSel));
 
-addPair(4,2);
-calcPower(); calcAc(); calcAmpSel();
+/* Стартовая схема: 2 пары по 2×4 Ом последовательно, пары параллельно.
+   Это ровно твой исходный кейс — должно дать 4 Ом. */
+(function initDemo(){
+  const g = root;
+  g.connection = 'parallel';
+
+  const p1 = newNode('pair');
+  p1.connection = 'series';
+  p1.items = [{ ohm: 4, count: 2 }];
+
+  const p2 = newNode('pair');
+  p2.connection = 'series';
+  p2.items = [{ ohm: 4, count: 2 }];
+
+  g.children.push(p1, p2);
+})();
+
+render();
+calcPower();
+calcAc();
+calcAmpSel();
 </script>
 </body>
 </html>
